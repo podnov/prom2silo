@@ -2,11 +2,18 @@ package main
 
 import (
 	"encoding/json"
+	"os"
 	"testing"
 )
 
 func Test_convertPrometheusAlertToScienceLogicAlert_status_firing(t *testing.T) {
-	siloAlignedResource = "/device/42"
+	givenAlignedResource := "/device/42"
+
+	oldAlignedResource := os.Getenv(alignedResourceEnvVarName)
+	os.Setenv(alignedResourceEnvVarName, givenAlignedResource)
+	defer func() {
+		os.Setenv(alignedResourceEnvVarName, oldAlignedResource)
+	}()
 
 	givenAlertAnnotations := map[string]string{
 		"description": "Pod /silo-etl-config-dynamic-apps-config-etl-stage-1516893600-6czrl is was restarted 5.042016806722689 times within the last hour",
@@ -44,7 +51,13 @@ func Test_convertPrometheusAlertToScienceLogicAlert_status_firing(t *testing.T) 
 }
 
 func Test_convertPrometheusAlertToScienceLogicAlert_status_resolved(t *testing.T) {
-	siloAlignedResource = "/device/42"
+	givenAlignedResource := "/device/42"
+
+	oldAlignedResource := os.Getenv(alignedResourceEnvVarName)
+	os.Setenv(alignedResourceEnvVarName, givenAlignedResource)
+	defer func() {
+		os.Setenv(alignedResourceEnvVarName, oldAlignedResource)
+	}()
 
 	givenAlertAnnotations := map[string]string{
 		"description": "Pod /silo-etl-config-dynamic-apps-config-etl-stage-1516893600-6czrl is was restarted 5.042016806722689 times within the last hour",
@@ -60,7 +73,7 @@ func Test_convertPrometheusAlertToScienceLogicAlert_status_resolved(t *testing.T
 	givenAlert.Alertname = "PodFrequentlyRestarting"
 	givenAlert.Annotations = givenAlertAnnotations
 	givenAlert.Labels = givenAlertLabels
-	givenAlert.Status = "firing" // TODO resolved?
+	givenAlert.Status = "resolved"
 
 	actualAlert := convertPrometheusAlertToScienceLogicAlert(givenAlert)
 
@@ -73,7 +86,7 @@ func Test_convertPrometheusAlertToScienceLogicAlert_status_resolved(t *testing.T
 
 	expectedAlertJson := `{
     "aligned_resource": "/device/42",
-    "message": "Firing: PodFrequentlyRestarting\nSeverity: Warning\nInstance: 10.233.96.177:8080\n\nPod /silo-etl-config-dynamic-apps-config-etl-stage-1516893600-6czrl is was restarted 5.042016806722689 times within the last hour"
+    "message": "Resolved: PodFrequentlyRestarting\nSeverity: Warning\nInstance: 10.233.96.177:8080\n\nPod /silo-etl-config-dynamic-apps-config-etl-stage-1516893600-6czrl is was restarted 5.042016806722689 times within the last hour"
 }`
 
 	if actualAlertJson != expectedAlertJson {

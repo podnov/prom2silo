@@ -10,7 +10,10 @@ import (
 	"strings"
 )
 
-const siloAlertApiUri = "api/alert"
+const (
+	alignedResourceEnvVarName = "PROM2SILO_SILO_ALIGNED_RESOURCE"
+	siloAlertApiUri = "api/alert"
+)
 
 func main() {
 	listenAddress := os.Getenv("PROM2SILO_LISTEN_ADDRESS")
@@ -47,7 +50,7 @@ Instance: %v
 
 	result := ScienceLogicAlert{}
 
-	result.AlignedResource = os.Getenv("PROM2SILO_SILO_ALIGNED_RESOURCE")
+	result.AlignedResource = os.Getenv(alignedResourceEnvVarName)
 	result.Message = message
 
 	return result
